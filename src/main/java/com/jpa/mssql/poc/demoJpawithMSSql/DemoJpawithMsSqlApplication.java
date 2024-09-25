@@ -1,12 +1,17 @@
 package com.jpa.mssql.poc.demoJpawithMSSql;
 
 import com.jpa.mssql.poc.demoJpawithMSSql.dto.AuthorNameAge;
+import com.jpa.mssql.poc.demoJpawithMSSql.entity.Item;
 import com.jpa.mssql.poc.demoJpawithMSSql.service.BookstoreService;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityManagerFactory;
+import jakarta.persistence.Persistence;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 
+import java.util.Date;
 import java.util.List;
 
 @SpringBootApplication
@@ -25,15 +30,33 @@ public class DemoJpawithMsSqlApplication {
 	@Bean
 	public ApplicationRunner init() {
 		return args -> {
-			bookstoreService.insertAuthorWithBooks();
+			EntityManagerFactory emf =
+					Persistence.createEntityManagerFactory("ch05.mapping");
+			EntityManager em = emf.createEntityManager();
 
-			List<AuthorNameAge> authors = bookstoreService.fetchFirst2ByBirthplace();
+			try {
+				em.getTransaction().begin();
 
-			System.out.println("Number of authors:" + authors.size());
+				Item item = new Item();
+				item.setName("Some Item");
+				item.setAuctionEnd(new Date(new Date().getTime() + (1000 * 60 * 60 * 24)));
 
-			for (AuthorNameAge author : authors) {
-				System.out.println("Author name: " + author.getName()
-						+ " | Age: " + author.getAge());
+				em.persist(item);
+
+				em.getTransaction().commit();
+				em.getTransaction().begin();
+
+				List<Item> items =
+						em.createQuery("select i from Item i", Item.class).getResultList();
+				//SELECT * from ITEM
+
+				em.getTransaction().commit();
+
+
+
+			} finally {
+				em.close();
+				emf.close();
 			}
 
 		};

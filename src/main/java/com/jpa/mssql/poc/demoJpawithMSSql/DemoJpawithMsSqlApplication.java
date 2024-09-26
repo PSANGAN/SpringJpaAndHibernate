@@ -2,6 +2,7 @@ package com.jpa.mssql.poc.demoJpawithMSSql;
 
 import com.jpa.mssql.poc.demoJpawithMSSql.dto.AuthorNameAge;
 import com.jpa.mssql.poc.demoJpawithMSSql.entity.Item;
+import com.jpa.mssql.poc.demoJpawithMSSql.entity.Projection;
 import com.jpa.mssql.poc.demoJpawithMSSql.entity.User;
 import com.jpa.mssql.poc.demoJpawithMSSql.repository.UserRepository;
 import com.jpa.mssql.poc.demoJpawithMSSql.service.BookstoreService;
@@ -15,6 +16,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.JpaSort;
 
 import java.time.LocalDate;
 import java.time.Month;
@@ -142,32 +144,28 @@ public class DemoJpawithMsSqlApplication {
 		return users;
 	}
 
-	@Bean
-	public ApplicationRunner init(UserRepository userRepository) {
+	void doWork01(UserRepository userRepository){
 
-		return args -> {
-			// userRepository.saveAll(generateUsers());
+//			userRepository.saveAll(generateUsers());
 
-			/*
-			Iterable<User> users =  userRepository.findAll();
-			users.iterator().forEachRemaining( System.out::println);
-			 */
-
+//			Iterable<User> allUsers =  userRepository.findAll();
+//			allUsers.iterator().forEachRemaining( System.out::println);
+//
 //			System.out.println(userRepository.findByUsername("beth").getEmail());
-
+//
 //			List<User> orderedUsersList =  userRepository.findByOrderByUsernameAsc();
 //			orderedUsersList.forEach(System.out::println);
-
+//
 //			List<User> usersBetweenRegistrationDate = userRepository.findByRegistrationDateBetween(
 //					LocalDate.of(2020, Month.JULY, 1),
 //					LocalDate.of(2020, Month.DECEMBER, 31));
 //			usersBetweenRegistrationDate.forEach(System.out::println);
-
+//
 //			User user1 = userRepository.findFirstByOrderByUsernameAsc();
 //			System.out.println(user1.toString());
 //			User user2 = userRepository.findTopByOrderByRegistrationDateDesc();
 //			System.out.println(user2.toString());
-
+//
 //			// Total no of rows - 10, page no starts as 0 and its fetch first 3 records
 //			Page<User> userPage = userRepository.findAll(PageRequest.of(0, 3));
 //			userPage.forEach(System.out::println);
@@ -180,28 +178,42 @@ public class DemoJpawithMsSqlApplication {
 //			//  its fetch 10 records
 //			userPage = userRepository.findAll(PageRequest.of(3, 3));
 //			userPage.forEach(System.out::println);
-
+//
 //			// Find the first two users with level 2, ordered by registration date
 //			List<User> users = userRepository.findFirst2ByLevel(2,Sort.by("registrationDate"));
 //			users.forEach(System.out::println);
+//
+//			try(Stream<User> result =
+//						userRepository.findByEmailContaining("someother")
+//								.and(userRepository.findByLevel(2))
+//								.stream().distinct()) {
+//				System.out.println(result.count());
+//			}
 
-			try(Stream<User> result =
-						userRepository.findByEmailContaining("someother")
-								.and(userRepository.findByLevel(2))
-								.stream().distinct()) {
-				System.out.println(result.count());
-			}
+		List<Object[]> usersList1 =
+				userRepository.findByAsArrayAndSort("ar", Sort.by("username"));
+		List<Object[]> usersList2 =
+				userRepository.findByAsArrayAndSort("ar",Sort.by("email_length").descending());
+		List<Object[]> usersList3 = userRepository.findByAsArrayAndSort("ar", JpaSort.unsafe("LENGTH(u.email)"));
+
+//			 userRepository.deleteAll();
+	}
+
+	@Bean
+	public ApplicationRunner init(UserRepository userRepository) {
+
+		return args -> {
+//			userRepository.saveAll(generateUsers());
+
+			List<Projection.UsernameOnly> users = userRepository.findByEmail("john@somedomain.com");
 
 
+			List<Projection.UsernameOnly> usernames =
+					userRepository.findByEmail("mike@somedomain.com",
+							Projection.UsernameOnly.class);
 
 
-
-
-
-
-
-			// userRepository.deleteAll();
-
+//			userRepository.deleteAll();
 		};
 	}
 }

@@ -26,6 +26,11 @@ public class Bid {
     public Bid() {
     }
 
+    @PostPersist
+    public void logMessage(){
+        System.out.println(this.toString());
+    }
+
     public Bid(BigDecimal amount) {
         this.amount = amount;
     }
@@ -63,4 +68,6 @@ public class Bid {
     public void setAmount(BigDecimal amount) {
         this.amount = amount;
     }
+
+
 }

@@ -13,6 +13,11 @@ public class User {
 
     public User() {
     }
+    
+    @PostPersist
+    public void logMessage(){
+        System.out.println(this.toString());
+    }
 
     public User(String username) {
         this.username = username;
@@ -36,4 +41,6 @@ public class User {
     public void setUsername(String username) {
         this.username = username;
     }
+
+
 }

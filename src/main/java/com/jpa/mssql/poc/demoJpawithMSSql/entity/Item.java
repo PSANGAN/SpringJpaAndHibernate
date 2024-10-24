@@ -1,5 +1,6 @@
 package com.jpa.mssql.poc.demoJpawithMSSql.entity;
 
+import com.jpa.mssql.poc.demoJpawithMSSql.Listener.PersistEntityListener;
 import jakarta.persistence.*;
 import org.antlr.v4.runtime.misc.NotNull;
 
@@ -11,26 +12,31 @@ import java.util.HashSet;
 import java.util.Set;
 
 @Entity
+@EntityListeners(
+        PersistEntityListener.class
+)
 public class Item {
 
     private Long id;
 
     private String name;
 
-    private LocalDate auctionEnd;
+    private LocalDate auction;
 
+    @ManyToOne(fetch = FetchType.EAGER)
     private User seller;
 
     private Set<Category> categories = new HashSet<>();
 
+    @OneToMany(mappedBy = "item", fetch = FetchType.EAGER)
     private Set<Bid> bids = new HashSet<>();
 
     public Item() {
     }
 
-    public Item(String name, LocalDate auctionEnd, User seller) {
+    public Item(String name, LocalDate auction, User seller) {
         this.name = name;
-        this.auctionEnd = auctionEnd;
+        this.auction = auction;
         this.seller = seller;
     }
 
@@ -54,12 +60,12 @@ public class Item {
     }
 
     @NotNull
-    public LocalDate getAuctionEnd() {
-        return auctionEnd;
+    public LocalDate getAuction() {
+        return auction;
     }
 
-    public void setAuctionEnd(LocalDate auctionEnd) {
-        this.auctionEnd = auctionEnd;
+    public void setAuction(LocalDate auction) {
+        this.auction = auction;
     }
 
     @NotNull

@@ -19,10 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.Month;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Stream;
 
 @SpringBootApplication
@@ -83,6 +80,24 @@ public class DemoJpawithMsSqlApplication {
 //		em.getTransaction().commit();
 //		em.close();
 	}
+
+//	void doWorkHibernate02(){
+//		EntityManagerFactory emf = Persistence.createEntityManagerFactory("MSSQL");
+//		EntityManager em = emf.createEntityManager();
+//		em.getTransaction().begin();
+//
+//		Item refItem = em.getReference(Item.class, 1L);
+//		PersistenceUtil persistenceUtil = Persistence.getPersistenceUtil();
+//
+//		System.out.println(refItem.getId().toString()); // No DB hit
+//		System.out.println(persistenceUtil.isLoaded(refItem)); // False
+//
+//		System.out.println(refItem.getName()); // BD Hit
+//		System.out.println(persistenceUtil.isLoaded(refItem)); // True
+//
+//		em.getTransaction().commit();
+//		em.close();
+//	}
 
 	private List<Item> storeTestData() {
 		List<Item> itemList = new ArrayList<>();
@@ -151,25 +166,39 @@ public class DemoJpawithMsSqlApplication {
 
 		return itemList;
 	}
+
+	void doWork05(){
+		List<Item> returnData =  storeTestData();
+
+		EntityManagerFactory emf = Persistence.createEntityManagerFactory("MSSQL");
+		EntityManager em = emf.createEntityManager();
+		em.getTransaction().begin();
+
+		Long ITEM_ID = returnData.get(0).getId();
+		Item item = em.find(Item.class, ITEM_ID);
+
+		Set<Bid> bids = item.getBids(); // Collection is not initialized
+		PersistenceUtil persistenceUtil = Persistence.getPersistenceUtil();
+
+		System.out.println(persistenceUtil.isLoaded(item, "bids")); // False
+		System.out.println(Set.class.isAssignableFrom(bids.getClass())); // True
+		System.out.println(HashSet.class == bids.getClass()); // False
+
+		Bid firstBid = bids.iterator().next(); // Collection is  initialized
+		System.out.println(firstBid.toString());
+		System.out.println(persistenceUtil.isLoaded(item, "bids")); // True
+	}
 	@Bean
 	public ApplicationRunner init() {
 
 		return args -> {
+			List<Item> returnData =  storeTestData();
+
 			EntityManagerFactory emf = Persistence.createEntityManagerFactory("MSSQL");
 			EntityManager em = emf.createEntityManager();
 			em.getTransaction().begin();
-
-			Item refItem = em.getReference(Item.class, 1L);
-			PersistenceUtil persistenceUtil = Persistence.getPersistenceUtil();
-
-			System.out.println(refItem.getId().toString()); // No DB hit
-			System.out.println(persistenceUtil.isLoaded(refItem)); // False
-
-			System.out.println(refItem.getName()); // BD Hit
-			System.out.println(persistenceUtil.isLoaded(refItem)); // True
-
-			em.getTransaction().commit();
-			em.close();
+			Item item = em.find(Item.class, 1L);
+			System.out.println(item.getBids().size()); // DB hits and Select count(*) executes
 
 		};
 	}
